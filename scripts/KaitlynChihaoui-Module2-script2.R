@@ -131,9 +131,41 @@ test_ids <- test_labels$.id
 train_bigram <- bigram_full %>% filter(.id %in% train_ids) %>% arrange(factor(.id, levels=train_ids))
 test_bigram  <- bigram_full %>% filter(.id %in% test_ids) %>% arrange(factor(.id, levels=test_ids))
 
+missing_train <- setdiff(train_ids, train_bigram$.id)
+missing_test <- setdiff(test_ids, test_bigram$.id)
+
+# Add missing documents as zero rows
+if(length(missing_train) > 0) {
+  zero_cols <- setNames(rep(list(0), ncol(train_bigram) - 2), 
+                        colnames(train_bigram)[-(1:2)])
+  missing_df <- train_labels %>%
+    filter(.id %in% missing_train) %>%
+    bind_cols(as_tibble(zero_cols))
+  
+  train_bigram <- bind_rows(train_bigram, missing_df) %>%
+    arrange(factor(.id, levels = train_ids))
+}
+
+if(length(missing_test) > 0) {
+  zero_cols <- setNames(rep(list(0), ncol(test_bigram) - 2), 
+                        colnames(test_bigram)[-(1:2)])
+  missing_df <- test_labels %>%
+    filter(.id %in% missing_test) %>%
+    bind_cols(as_tibble(zero_cols))
+  
+  test_bigram <- bind_rows(test_bigram, missing_df) %>%
+    arrange(factor(.id, levels = test_ids))
+}
+
 # Remove columns for PCA
 train_bigram_mat <- train_bigram %>% select(-.id, -bclass)
 test_bigram_mat  <- test_bigram %>% select(-.id, -bclass)
+
+bigram_variance <- apply(train_bigram_mat, 2, var)
+top_bigrams <- names(sort(bigram_variance, decreasing = TRUE)[1:500])
+
+train_bigram_mat <- train_bigram_mat %>% select(all_of(top_bigrams))
+test_bigram_mat <- test_bigram_mat %>% select(all_of(top_bigrams))
 
 # PCA on bigram DTM 
 proj_bigram <- projection_fn(train_bigram_mat, .prop = 0.8)
