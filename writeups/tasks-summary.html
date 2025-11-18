@@ -83,7 +83,7 @@ ul.task-list li input[type="checkbox"] {
 </section>
 <section id="bigrams" class="level3">
 <h3 class="anchored" data-anchor-id="bigrams">Bigrams</h3>
-<p>Do bigrams capture additional information relevant to the classification of interest? Answer the question, <strong>briefly</strong> describe what analysis you conducted to arrive at your answer, and provide quantitative evidence supporting your answer.</p>
+<p>To evaluate whether bigrams capture additional signal beyond single-word features, we built a two-stage model. First, we fit a logistic principal-component regression to the unigram TF–IDF matrix and extracted each page’s predicted log-odds. We then tokenized the cleaned text into bigrams, computed TF–IDF weights, reduced these features via PCA, and combined the bigram principal components with the unigram log-odds as predictors in a second elastic-net logistic regression. Cross-validated tuning selected similar regularization strengths for the unigram model (λ ≈ 0.01796) and the combined model (λ ≈ 0.02141), but including bigram features produced a very small improvement in predictive performance. The test AUC increased from 0.83258 (unigrams only) to 0.83263 (unigrams + bigrams), a gain of roughly +0.0001. This indicates that bigrams do contain some additional information relevant to the claim classification task, though the practical improvement is minimal.</p>
 </section>
 <section id="neural-net" class="level3">
 <h3 class="anchored" data-anchor-id="neural-net">Neural net</h3>
