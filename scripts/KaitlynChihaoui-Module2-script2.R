@@ -201,3 +201,41 @@ cv_comb <- cv.glmnet(
 lambda_comb <- cv_comb$lambda.min
 
 lambda_comb
+
+# Better AUC function that handles factors
+calculate_auc <- function(y_true, y_pred) {
+  # Handle factor conversion properly
+  if(is.factor(y_true)) {
+    # Assume the second level is the positive class
+    y_true <- as.numeric(y_true) - 1  # Converts factor to 0/1
+  } else {
+    y_true <- as.numeric(y_true)
+  }
+  
+  y_pred <- as.numeric(y_pred)
+  
+  # Remove NAs
+  valid <- !is.na(y_true) & !is.na(y_pred)
+  y_true <- y_true[valid]
+  y_pred <- y_pred[valid]
+  
+  n_pos <- sum(y_true == 1)
+  n_neg <- sum(y_true == 0)
+  
+  if (n_pos == 0 || n_neg == 0) {
+    warning("Only one class present!")
+    return(NA)
+  }
+  
+  ranks <- rank(y_pred)
+  auc <- (sum(ranks[y_true == 1]) - n_pos * (n_pos + 1) / 2) / (n_pos * n_neg)
+  
+  return(auc)
+}
+
+# Now calculate AUCs
+auc_words <- calculate_auc(test_labels$bclass, pred_words_test)
+auc_comb <- calculate_auc(test_labels$bclass, pred_comb_test)
+
+auc_words
+auc_comb
