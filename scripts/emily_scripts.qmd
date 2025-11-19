@@ -1,0 +1,103 @@
+---
+title: "emily_scripts"
+format: html
+---
+
+Build and train a neural network model. Experiment with architectures and training configurations until you find a model that performs at least as well as principal component logistic regression from task 1. Quantify the predictive accuracy. (80%, which is higher than the accuracy in task 1, which is around 54%)
+
+
+```{r set up data and model}
+library(tidyverse)
+library(tidymodels)
+library(keras)
+library(tensorflow)
+library(e1071)
+library(glmnet)
+
+# load preprocessing (use existing functions from given script)
+source('../scripts/preprocessing.R')
+
+load('../data/claims-clean-task4.RData')
+
+# partition
+set.seed(110325)
+claims_clean <- claims_clean |>
+  mutate(text_clean = str_trim(text_clean)) %>%
+  filter(str_length(text_clean) > 5) %>%
+  unnest_tokens(output = 'token', 
+                input = text_clean) %>%
+  group_by(.id, bclass) %>%
+  count(token) %>%
+  bind_tf_idf(term = token, 
+              document = .id, 
+              n = n) %>%
+  pivot_wider(id_cols = c(.id, bclass), 
+              names_from = token, 
+              values_from = tf_idf,
+              values_fill = 0) %>%
+  ungroup()
+
+partitions <- claims_clean %>%
+  initial_split(prop = 0.8)
+
+train_dtm <- training(partitions) 
+test_df <- testing(partitions)
+
+cat("Training samples:", nrow(train_dtm), "\n")
+cat("Test samples:", nrow(test_df), "\n\n")
+```
+
+
+```{r define model}
+# store full DTM as a matrix
+x_train <- train_dtm %>%
+  ungroup() %>%
+  select(-bclass, -.id) %>%
+  as.matrix()
+
+model <- keras_model_sequential(input_shape = ncol(x_train)) %>%
+  layer_dense(10) %>%
+  layer_dense(1) %>%
+  layer_activation(activation = 'sigmoid')
+
+summary(model)
+```
+```{r fit model}
+# extract labels and coerce to binary
+y_train <- train_dtm %>% 
+  pull(bclass) %>%
+  factor() %>%
+  as.numeric() - 1
+
+model %>%
+  compile(
+    loss = 'binary_crossentropy',
+    optimizer = 'adam',
+    metrics = 'binary_accuracy'
+  )
+history <- model %>%
+  fit(x = x_train,
+      y = y_train,
+      epochs = 20,
+      validation_split = .2)
+```
+
+```{r}
+evaluate(model, x_train, y_train)
+```
+
+```{r evaluate with testing split}
+x_test <- test_df %>%
+  ungroup() %>%
+  select(-bclass, -.id) %>%
+  as.matrix()
+y_test <- test_df %>% 
+  pull(bclass) %>%
+  factor() %>%
+  as.numeric() - 1
+evaluate(model, x_test, y_test)
+```
+```{r}
+f
+```
+

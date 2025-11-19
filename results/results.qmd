@@ -1,0 +1,92 @@
+---
+title: "Group 4 Results"
+format: html
+editor: 
+  markdown: 
+    wrap: 72
+---
+
+Preliminary Tasks:
+
+1.The baseline model with paragraphs only had an accuracy of 0.453,
+while the model with headers included reached 0.548. This shows that for
+this split, adding headers led to better predictive performance. (Seed
+1172025) -Alex
+
+![](images/Prelim%20task%201.png)
+
+2.  I trained a neural network with one hidden layer using the sigmoid
+    activation function, Adam optimizer, and binary cross entropy loss
+    function. The binary accuracy on the training dataset was about
+    0.92, with a validation binary accuracy of a little under 0.8. To
+    evaluate the model’s true predictive performance, I evaluated the
+    model with a test split of 20% of the original cleaned data, and the
+    binary accuracy was 0.8, which matches up with the validation binary
+    accuracy.
+
+For the deliverables, the model and predictions are fit in the file
+emily_scripts.rmd.
+
+![](images/Prelim%20task%202.png)
+
+Primary Task: (for Deliverable 2) - Srin 4.
+
+Preprocessing was the same as what was given in preprocessing.R
+
+Trained Models
+
+1.Support Vector Machine (SVM)
+
+-Binary Accuracy: 61.54%
+
+-Multiclass Accuracy: 44.87%
+
+-Uses radial kernel with TF IDF features
+
+2.Regularized Logistic Regression
+
+-Binary Accuracy: 77.18%
+
+-Multiclass Accuracy: 46.41%
+
+-Ridge regression
+
+3\. RNN (Recurrent Neural Network)
+
+-Binary Accuracy: 53.85%
+
+-Multiclass Accuracy: 60.26%
+
+-LSTM layer with word embeddings and dropout
+
+For binary classification, went with Regularized Logistic Regression
+(highest accuracy)
+
+For multiclass classification, went with RNN (highest accuracy)
+
+Models are saved as:
+
+-results/models-lr.RData (contains logistic regression models)
+
+-results/model-rnn-multi.keras (RNN for multiclass)
+
+-results/feature-info.RData (feature column names for preprocessing)
+
+Deliverable 3 (set of multiclass and binary predictions on the test
+data, stored as results/preds-group4.RData).
+
+\- Srin Deliverable 4 (models saved above are deployable, shows how to
+use it in srin-script-test.R) -Srin
+
+Preliminary Task 2:
+
+-I fit a 2-stage model where: a logistic PCA on unigram features
+produced log-odds predictions, then these log-odds along with principal
+components from bigram features were used in a second elastic net
+logistic regression. The lambda value from the unigram model was
+0.0179575 while the lambda value from the bigram model was 0.02141464.
+The bigram model was slightly higher because additional bigram features
+caused increased complexity. Bigrams appear to capture some additional
+information, though the improvement is small. The test AUC increased
+from 0.8325818 to 0.8326336 (+0.0001), suggesting bigrams provide
+marginal predictive value beyond unigrams alone.
