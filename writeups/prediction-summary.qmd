@@ -5,54 +5,70 @@ date: today
 ---
 
 ### Abstract
-We used the cleaned text scraped from the webpages—containing paragraph and header content—and transformed it into TF–IDF features for predictive modeling. For the binary classification task, a **regularized logistic regression (ridge)** model achieved the highest accuracy at **77.18%**, outperforming both a support vector machine and a recurrent neural network. For multiclass classification, an **LSTM-based recurrent neural network** performed best, achieving **60.26% accuracy**, compared to 46.41% for regularized logistic regression and 44.87% for the SVM. These two models were selected as our final binary and multiclass classifiers and were exported in deployable form with corresponding predictions on the test dataset.
+We used the cleaned text scraped from the webpages—combining both paragraph content and header tags—and converted it into TF–IDF features for predictive modeling. For the binary classification task, regularized logistic regression (ridge) achieved the highest accuracy (77.18%), outperforming both the support vector machine and the recurrent neural network. For the multiclass task, an LSTM-based recurrent neural network performed best, reaching 60.26% accuracy, compared to 46.41% for ridge logistic regression and 44.87% for the SVM. These two models were selected as our final binary and multiclass classifiers, respectively, and were exported along with their corresponding test-set predictions.
 
 
 
 ### Preprocessing
 
-We extracted both paragraph text and header tags from each page’s HTML. All text was lowercased and cleaned by removing punctuation, URLs, email addresses, digits, and excess whitespace, with camel-case separation performed as needed. The cleaned text was tokenized, lemmatized, stripped of stopwords, and converted into TF–IDF–weighted document-term matrices. These TF–IDF feature vectors served as the quantitative input representation for all models in the binary and multiclass prediction tasks. Feature names were saved to ensure consistent column alignment when applying the trained models to the test set.
+We scraped and combined both paragraph text and HTML header tags from each webpage. All text was lowercased and cleaned by removing punctuation, numbers, URLs, email addresses, and extra whitespace. CamelCase splitting, tokenization, lemmatization, and stop-word removal were performed to normalize textual content. The resulting tokens were converted into TF–IDF–weighted document–term matrices, which served as the input features for all downstream models. Feature names were saved separately to ensure consistent column ordering when applying the models to the test dataset.
 
 
 ### Methods
+### Binary Classification
 
-Describe your final predictive models. Include one paragraph with details on the binary classification approach, and one on the multiclass approach. Include for each:
+We evaluated three models for the binary claim vs. non-claim prediction task: a Support Vector Machine (RBF kernel), regularized logistic regression (ridge), and a recurrent neural network (LSTM).
 
--   what ML/statistical method was used
+**Support Vector Machine (RBF):**  
+Used TF–IDF features with an RBF kernel. Hyperparameters were tuned over a limited grid to balance model flexibility and computational cost.
 
--   model specification and hyperparameter selection
+**Regularized Logistic Regression (Ridge):**  
+Applied a ridge penalty with the tuning parameter λ selected by cross-validation. This model fits a linear decision boundary in the high-dimensional sparse TF–IDF feature space.
 
--   training method
+**Recurrent Neural Network (LSTM):**  
+Constructed with an embedding layer, an LSTM layer, and dropout regularization. Due to package-loading issues encountered when reloading the model, we were only able to compute **accuracy** for this model.  
+*Professor Coburn confirmed that reporting accuracy alone is acceptable for this deliverable.*
 
-#### Binary classification
 
-For the binary setting, we compared three approaches: Support Vector Machine (SVM), regularized logistic regression, and an RNN. The SVM used a radial basis kernel and TF–IDF features, with hyperparameters tuned over a limited grid. The Regularized logistic regression model used **ridge regularization** with the tuning parameter λ chosen by cross-validation. This model was trained on the full TF–IDF matrix and produced linear decision boundaries in the principal-component-like feature space. The RNN used an embedding layer followed by an LSTM and dropout, but its validation accuracy was substantially lower than the ridge logistic model. Based on accuracy comparison, **regularized logistic regression** was selected as the final binary classifier.
+Across these models, **ridge logistic regression achieved the highest accuracy** and was therefore selected as the final binary classifier.
 
 #### Multiclass classification
 
-For multiclass prediction, we again evaluated Support Vector Machine (SVM), regularized logistic regression, and an RNN. The SVM and logistic models were extended to the multiclass setting using the standard one-vs-rest formulation, with hyperparameters selected using cross-validation. The RNN-based model used word embeddings, an **LSTM layer**, and dropout regularization, trained with a categorical cross-entropy loss and the Adam optimizer. The RNN achieved the highest multiclass accuracy (**60.26%**), outperforming both linear and kernel methods, and was therefore selected as the final multiclass model. The multiclass RNN was exported as a `.keras` model for deployment.
+For the multiclass task, we evaluated Support Vector Machine (RBF kernel), regularized logistic regression (ridge), and an LSTM-based recurrent neural network.
+
+**Support Vector Machine (RBF):**  
+Implemented using a one-vs-rest extension of the binary RBF SVM applied to TF–IDF features.
+
+**Regularized Logistic Regression (Ridge):**  
+Extended to the multiclass setting with a one-vs-rest formulation and ridge regularization.
+
+**Recurrent Neural Network (LSTM):**  
+Built with an embedding layer, LSTM layer, and dropout regularization, and trained with categorical cross-entropy using the Adam optimizer. Due to library-loading issues encountered when reloading the model for evaluation, we were only able to compute **accuracy** for this model.  
+*Professor Coburn confirmed that reporting accuracy alone is acceptable for this deliverable.*
 
 
-### Results
+Among all models, the **LSTM-based RNN achieved the highest accuracy (0.6026)** and was selected as the final multiclass classifier. The model was exported in `.keras` format for deployment.
+
+
+### Results 
 #### Binary classification metrics
 
 | Model                         | Accuracy | Sensitivity | Specificity |
 |-------------------------------|----------|-------------|-------------|
-| Support Vector Machine (RBF)  | 0.6154   | ** | ** |
-| Regularized Logistic (Ridge)  | **0.7718** | ** | ** |
-| Recurrent Neural Network (RNN)| 0.5385   | ** | ** |
+| Support Vector Machine (RBF)  | 0.6154   | 0.378 | 0.8895 |
+| Regularized Logistic (Ridge)  | **0.7718** | 0.7656 | 0.779 |
+| Recurrent Neural Network (RNN)| 0.5385   | — | —  |
 
-The ridge logistic regression model performed best on the binary task and was selected as the final classifier.
-
+Final model: Ridge logistic regression.
 ---
 
 #### Multiclass classification metrics
 
 | Model                         | Accuracy | Sensitivity (macro) | Specificity (macro) |
 |-------------------------------|----------|----------------------|----------------------|
-| Support Vector Machine (RBF)  | 0.4487   | *to be added*        | *to be added*        |
-| Regularized Logistic (Ridge)  | 0.4641   | *to be added*        | *to be added*        |
-| Recurrent Neural Network (RNN)| **0.6026** | *to be added*      | *to be added*        |
+| Support Vector Machine (RBF)  | 0.4487   | 0.1934       | 0.7982       |
+| Regularized Logistic (Ridge)  | 0.4641   | 0.2         | 0.8        |
+| Recurrent Neural Network (RNN)| **0.6026** |  —   |   —   |
 
-The RNN with an LSTM layer achieved the highest multiclass accuracy and was selected as the final multiclass model. Sensitivity and specificity should be computed using **yardstick**’s macro or weighted-macro averaging methods.
+Final model: Multiclass LSTM-based RNN.
 
